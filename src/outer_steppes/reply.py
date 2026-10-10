@@ -29,6 +29,9 @@ MESSAGE_LIMIT = 2000
 HARD_SPLIT = 200
 MAX_CHUNKS = 5
 QUOTE_CHARS = 200
+# SpaceXAI's terms require crediting Grok wherever its output is published, in the Brand Guidelines' words
+# (DESIGN.md, Rendering and chunking).
+ATTRIBUTION = "Written with Grok"
 
 # deliver_reply's results; get_prompt shares the ones it can return and adds OK and RESTARTED.
 DELIVERED, BAD_REQUEST, TOO_LONG, UNKNOWN, USED, CLOSED, REVOKED, DISCORD_ERROR = (
@@ -135,6 +138,15 @@ def chunk(text: str) -> list[str]:
     if current.strip():
         chunks.append(current)
     return chunks
+
+
+def attribute(chunks: list[str]) -> list[str]:
+    """End the answer with the attribution line: on the last message after a blank line, or as a message of its
+    own when that doesn't fit. Either way the answer stays within MAX_CHUNKS messages (DESIGN.md, Rendering)."""
+    last = chunks[-1].rstrip() + "\n\n" + ATTRIBUTION
+    if len(last) <= MESSAGE_LIMIT:
+        return chunks[:-1] + [last]
+    return chunks + [ATTRIBUTION]
 
 
 class ReplyService:
@@ -275,7 +287,7 @@ class ReplyService:
 
         # 3. Deliver: chunk 1 edits the deferred message, the rest are followups.
         interaction_id = row["interaction_id"]
-        chunks = chunk(render(prompt, content))
+        chunks = attribute(chunk(render(prompt, content)))
         for index, text in enumerate(chunks[:MAX_CHUNKS]):
             if index == 0:
                 result = await self._discord.edit_original(row["interaction_token"], text)

@@ -22,7 +22,7 @@ async def test_a_member_asks_the_automation_answers_and_discord_shows_it(boot):
     await eventually(lambda: h.discord.calls, "the answer to reach Discord")
     kind, token, body = h.discord.calls[0]
     assert (kind, token) == ("edit", "interaction-token-abc")
-    assert body == {"content": "> what is 2 + 2?\nIt is four.", "allowed_mentions": {"parse": []}}
+    assert body == {"content": "> what is 2 + 2?\nIt is four.\n\nWritten with Grok", "allowed_mentions": {"parse": []}}
 
     # The automation received exactly the payload DESIGN.md describes: no prompt and no Discord ids. The bridge's
     # signature verified with the stored secret (a bad signature would be a 401 in `rejected`).
@@ -59,7 +59,7 @@ async def test_a_reply_token_works_once(boot):
     second = await h.automation.send_reply(token, "second")
     assert (h.automation.text(first), second["isError"]) == ("Posted to Discord.", True)
     assert h.automation.text(second).startswith("used:")
-    assert [c[2]["content"] for c in h.discord.calls] == ["> hello\nfirst"]
+    assert [c[2]["content"] for c in h.discord.calls] == ["> hello\nfirst\n\nWritten with Grok"]
 
 
 async def test_a_trigger_from_an_account_without_the_members_connector_gets_nothing(boot):

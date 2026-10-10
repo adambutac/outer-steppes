@@ -94,7 +94,7 @@ async def test_pause_withdraws_queued_and_posted_work_refuses_new_work_and_unpau
     status, ack = await h.interact({**command(prompt="fourth"), "token": "token-after"})
     assert (status, ack["type"]) == (200, 5)
     await eventually(lambda: h.automation.replies, "the answer after unpausing to be delivered")
-    assert [b["content"] for _, t, b in h.discord.calls if t == "token-after"] == ["> fourth\nBack again."]
+    assert [b["content"] for _, t, b in h.discord.calls if t == "token-after"] == ["> fourth\nBack again.\n\nWritten with Grok"]
 
     # Only the first ask and the one after unpausing were ever sent to the automation. The queued one never was:
     # with one slot, its worker had to finish before the later ask's could send.

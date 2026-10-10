@@ -65,7 +65,7 @@ async def test_a_member_joins_saves_a_webhook_and_is_answered_through_the_connec
     assert called.json()["result"] == {"content": [{"type": "text", "text": "Posted to Discord."}], "isError": False}
 
     [(kind, _, body)] = h.discord.calls
-    assert kind == "edit" and body["content"] == "> what is 2 + 2?\nfour"
+    assert kind == "edit" and body["content"] == "> what is 2 + 2?\nfour\n\nWritten with Grok"
     assert await h.say(command("status", caller=USER)) == "You're a member and your automation is set."
     assert h.automation.rejected == []
 

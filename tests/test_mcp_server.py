@@ -129,7 +129,7 @@ async def test_grok_flow_end_to_end(http, conn, credentials, fake_discord, held)
         "name": "discord_reply", "arguments": {"reply_token": reply_token, "content": "Two issues: A and B"}},
         version="2025-06-18")).json()
     assert call["result"] == {"content": [{"type": "text", "text": "Posted to Discord."}], "isError": False}
-    assert fake_discord.calls == [("itok", "> what is assigned to me\nTwo issues: A and B")]
+    assert fake_discord.calls == [("itok", "> what is assigned to me\nTwo issues: A and B\n\nWritten with Grok")]
     assert conn.execute("SELECT last_used_at FROM oauth_clients").fetchone()[0] == NOW
 
 
