@@ -79,20 +79,18 @@ def test_worst_case_with_the_attribution_fits_in_five_messages():
     of at most three messages, so an answer still fits in five."""
     header = render("q" * 250, "")
     contents = ["x" * 7000, ("y" * 199 + " ") * 35, "\n\n".join(["z" * 150] * 46)[:7000]]
-    # Answers whose last message is too full for the attribution, at every message count that allows it (1-3;
-    # three over 1800 plus a fourth over 1981 is more than REPLY_MAX_CHARS plus the header).
-    contents += ["w" * (2000 * n - len(header) - k) for n in range(1, 4) for k in range(0, 20)]
     texts = [header + content[:7000] for content in contents]
-    # Without the quote (after a restart), answers of 1-3 messages whose last is 1990 characters.
+    # Answers of 1-3 messages whose last is too full for the attribution (no quote, as after a restart).
     texts += [render(None, "w" * (2000 * m + 1990)) for m in range(3)]
-    own_message = 0
+    before_own_message = set()
     for text in texts:
         messages = attribute(chunk(text))
-        own_message += messages[-1] == ATTRIBUTION
+        if messages[-1] == ATTRIBUTION:
+            before_own_message.add(len(messages) - 1)
         assert len(messages) <= MAX_CHUNKS, len(messages)
         assert all(len(m) <= MESSAGE_LIMIT for m in messages)
         assert "".join(messages).count(ATTRIBUTION) == 1 and messages[-1].endswith(ATTRIBUTION)
-    assert own_message >= 3  # the overflow path really ran, including after full messages
+    assert before_own_message == {1, 2, 3}  # the overflow path ran after every answer length that allows it
 
 
 def test_no_whitespace_only_chunks():
@@ -295,6 +293,14 @@ async def test_multi_chunk_private_uses_ephemeral_followups(service, conn, held,
     assert row(conn, iid)["chunks_sent"] == 1 + len(fake_discord.followups)
     sent = [fake_discord.calls[0][1]] + [content for _, content, _ in fake_discord.followups]
     assert "".join(sent).count(ATTRIBUTION) == 1 and sent[-1].endswith("\n\n" + ATTRIBUTION)
+
+
+async def test_an_attribution_that_does_not_fit_is_its_own_followup(service, conn, fake_discord):
+    iid, token = posted(conn)  # no prompt held: no quote, so the two messages are exactly 2000 and 1990
+    assert await service.deliver_reply(token, "w" * 3990, ME) == "delivered"
+    assert [len(content) for _, content in fake_discord.calls] == [2000]
+    assert [content for _, content, _ in fake_discord.followups] == ["w" * 1990, ATTRIBUTION]
+    assert row(conn, iid)["chunks_sent"] == 3
 
 
 async def test_token_is_single_use(service, conn, held):
