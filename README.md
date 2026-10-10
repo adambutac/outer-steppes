@@ -1,8 +1,20 @@
 # Outer Steppes
 
+> In the Diablo universe, the Outer Steppes is the passage leading out of the Pandemonium Fortress, the last bastion of the Light, into the heart of the Eternal Conflict.
+
 Outer Steppes is a bridge between Discord and consumer AI platforms. Most AI bots call a developer API. Outer Steppes instead sends each question to the member's **own** grok.com account, so answers can use the connectors they already have there: mail, drive, Linear, GitHub, and anything else they've connected.
 
-The bridge was designed with security and privacy in mind. It never stores or logs prompt or answer text, and never logs tokens or secrets. User data storage is limited to a minimal set of Discord id, settings, webhook and connector tokens, plus request records which are deleted 24 hours after they finish.
+The bridge was designed with security and privacy in mind. It never stores or logs prompt or answer text, and never logs tokens or secrets. It stores only each member's Discord id, settings, webhook and connector tokens, plus request records that are deleted 24 hours after they finish.
+
+## Design highlights
+
+- **The prompt never travels in the webhook.** The bridge can't prove that a webhook URL belongs to the member who saved it, so the POST carries only a single-use reply token. The prompt and the answer move only through the member's own OAuth-bound connector, which is what proves whose Grok is running.
+- **No AI keys, and no bot token in the server.** The bridge never generates text or holds an API key. The Discord bot token is used only from a separate shell to register commands, and the server refuses to start if it's in its environment.
+- **Secrets are stored by how they're used.** Webhook secrets the bridge must sign with are kept; tokens it only checks are stored as hashes.
+- **Personal by default.** A new bridge accepts nobody until its owner claims it with a one-time link, and then membership is locked.
+- **No open ports.** TLS ends on the owner's machine through Tailscale Funnel; the admin API listens on loopback only.
+
+Each decision, and the alternatives it rejected, is recorded in [`docs/adr/`](docs/adr/). The threat model is in [DESIGN.md](DESIGN.md#threat-model).
 
 ## Features
 
@@ -34,7 +46,7 @@ Discord member ◀──edited reply──  Discord  ◀────────
 
 ## Privacy Disclaimer
 
-**Whoever runs a bridge can use its members' grok.com automations, and the connectors they run with.** Later implementations aim to provide secure multi-user support. For now, the operator of the bridge has unrestricted access to all data stored on and traveling through the bridge including keys and message data, so joining someone elses bridge is highly discouraged.
+**Whoever runs a bridge can use its members' grok.com automations, and the connectors they run with.** Later implementations aim to provide secure multi-user support. For now, the operator of the bridge has unrestricted access to all data stored on and traveling through the bridge including keys and message data, so joining someone else's bridge is highly discouraged.
 
 Instead, the recommended setup is to **run your own bridge, on a machine you control, for yourself**. That's the default: nobody can join a new bridge until you claim it with a one-time link, and then membership is locked. Run one for others only if they'd trust you with their grok.com account, and only join someone else's if you'd trust them with yours ([threat model](DESIGN.md#threat-model)).
 
@@ -42,7 +54,7 @@ Instead, the recommended setup is to **run your own bridge, on a machine you con
 
 You need Python 3.12+, Podman, and Tailscale with Funnel on and the machine name pinned ([Deployment](#deployment)). `<host>` below is `<machine>.<tailnet>.ts.net`.
 
-1. **Discord Developer Portal:** create an application. Under **Installation**, enable User Install and or Guild install with scopes `applications.commands`. Under **OAuth2**, add the redirect `https://<host>/oauth/discord/callback` and reset the secret. Under **Bot**, turn **Public Bot** off.
+1. **Discord Developer Portal:** create an application. Under **Installation**, enable User Install, Guild Install, or both, with the scope `applications.commands`. Under **OAuth2**, add the redirect `https://<host>/oauth/discord/callback` and reset the secret. Under **Bot**, turn **Public Bot** off.
 2. **Env file (.env):**
    ```
    DISCORD_PUBLIC_KEY=<General Information → Public Key>
@@ -93,7 +105,7 @@ positional arguments:
     reset               delete the data volume and start on an empty database
     restore             replace the data volume with a snapshot and start on it
     
-# osctl container tunnel starts the tailscale funnel on port 8000
+# osctl container tunnel runs Tailscale Funnel to 127.0.0.1:8080 until Ctrl-C
 > osctl container tunnel --help
 usage: osctl container tunnel [-h] [--url URL] [--env-file ENV_FILE]
 ...
@@ -121,13 +133,21 @@ The integration tests (`tests/integration/`) boot the real service with only Dis
 
 ## Documentation
 
-> In the Diablo universe, the Outer Steppes is the passage leading out of the Pandemonium Fortress, the last bastion of the Light, into the heart of the Eternal Conflict.
-
 - **[DESIGN.md](DESIGN.md):** what the system does: trust boundaries, the request path, OAuth, the threat model.
+- **[docs/adr/](docs/adr/):** why: one record per architecture decision.
 - **[SECURITY.md](SECURITY.md):** reporting a vulnerability.
 - **[docs/outer-steppes.excalidraw](docs/outer-steppes.excalidraw):** an end-to-end diagram; open it at excalidraw.com.
 
+## How this was built
 
+I built Outer Steppes with AI coding agents (mainly Claude Code) doing most of the implementation. My part was the system itself: the requirements, the trust model, and every architecture decision, including the ones recorded after a review or a pilot proved an earlier design wrong. ADR-0017, which moved the prompt out of the webhook, is one of those.
+
+The process is built so that no change gets in without evidence:
+
+- **Design before code.** A behavior change starts as an edit to DESIGN.md, and an ADR when it's an architecture decision, reviewed before any code is written.
+- **Deliberate breaks.** For risky code, each safety behavior is broken on purpose, one at a time, to prove a test catches it.
+- **Independent review.** Every branch gets a separate review pass before it's pushed, and findings are fixed or answered in writing.
+- **Owner merge.** I review every PR and its risk notes, and only I merge.
 
 ## Status
 
