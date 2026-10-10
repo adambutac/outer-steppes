@@ -75,12 +75,12 @@ def test_the_attribution_gets_its_own_message_only_when_it_does_not_fit():
 
 
 def test_worst_case_with_the_attribution_fits_in_five_messages():
-    """The attribution can only need its own message when the last one is over 1980 characters, which leaves room
+    """The attribution can only need its own message when the last one is over 1981 characters, which leaves room
     for at most four before it: a fifth that long would need more than REPLY_MAX_CHARS plus the header."""
     header = render("q" * 250, "")
     contents = ["x" * 7000, ("y" * 199 + " ") * 35, "\n\n".join(["z" * 150] * 46)[:7000]]
     # Answers whose last message is too full for the attribution, at every message count that allows it (1-3;
-    # three over 1800 plus a fourth over 1980 is more than REPLY_MAX_CHARS plus the header).
+    # three over 1800 plus a fourth over 1981 is more than REPLY_MAX_CHARS plus the header).
     contents += ["w" * (2000 * n - len(header) - k) for n in range(1, 4) for k in range(0, 20)]
     texts = [header + content[:7000] for content in contents]
     # Without the quote (after a restart), answers of 1-3 messages whose last is 1990 characters.
