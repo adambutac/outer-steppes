@@ -11,7 +11,9 @@ import pytest
 from outer_steppes import foreign, metrics
 from outer_steppes import reply as reply_mod
 from outer_steppes.discord_out import Outcome
-from outer_steppes.reply import HeldPrompts, ReplyService, chunk, mint_reply_token, render
+from outer_steppes.reply import (
+    ATTRIBUTION, MAX_CHUNKS, MESSAGE_LIMIT, HeldPrompts, ReplyService, attribute, chunk, mint_reply_token, render,
+)
 
 from .conftest import (
     CALLER, GUILD, NOW, SECRET, assert_token_invariant, link_automations, make_config, register, snowflake,
@@ -26,7 +28,7 @@ RESTARTED_TEXT = "The bridge restarted before Grok could read your message. Plea
 # ------------------------------------------------------------------ rendering and chunking
 
 def test_render_quotes_one_line_then_the_answer():
-    """No attribution line: every answer comes from the caller's own automation (ADR-0009)."""
+    """No line naming whose automation answered: every answer comes from the caller's own (ADR-0009)."""
     assert render("what is up", "Answer.") == "> what is up\nAnswer."
     assert render("what\n  is\tup", "A") == "> what is up\nA"  # whitespace collapsed: one line
     assert render("x" * 200, "A") == "> " + "x" * 200 + "\nA"  # exactly 200: nothing cut, no ellipsis
@@ -57,6 +59,38 @@ def test_worst_case_fits_in_five_messages():
     for content in ("x" * 7000, ("y" * 199 + " ") * 35, "\n\n".join(["z" * 150] * 46)[:7000]):
         chunks = chunk(header + content[:7000])
         assert len(chunks) <= 5, len(chunks)
+
+
+def test_the_attribution_ends_the_last_message_after_a_blank_line():
+    """xAI's terms require crediting Grok (DESIGN.md, Rendering and chunking)."""
+    assert ATTRIBUTION == "Written with Grok"
+    assert attribute(["> q\nAnswer."]) == ["> q\nAnswer.\n\nWritten with Grok"]
+    assert attribute(["one", "Answer. \n\n"]) == ["one", "Answer.\n\nWritten with Grok"]  # trailing space dropped
+
+
+def test_the_attribution_gets_its_own_message_only_when_it_does_not_fit():
+    fits = "a" * (MESSAGE_LIMIT - len("\n\n" + ATTRIBUTION))
+    assert attribute([fits]) == [fits + "\n\n" + ATTRIBUTION]
+    assert attribute([fits + "a"]) == [fits + "a", ATTRIBUTION]
+
+
+def test_worst_case_with_the_attribution_fits_in_five_messages():
+    """The attribution needs its own message only when it doesn't fit on the last one, which happens only to answers
+    of at most three messages, so an answer still fits in five."""
+    header = render("q" * 250, "")
+    contents = ["x" * 7000, ("y" * 199 + " ") * 35, "\n\n".join(["z" * 150] * 46)[:7000]]
+    texts = [header + content[:7000] for content in contents]
+    # Answers of 1-3 messages whose last is too full for the attribution (no quote, as after a restart).
+    texts += [render(None, "w" * (2000 * m + 1990)) for m in range(3)]
+    before_own_message = set()
+    for text in texts:
+        messages = attribute(chunk(text))
+        if messages[-1] == ATTRIBUTION:
+            before_own_message.add(len(messages) - 1)
+        assert len(messages) <= MAX_CHUNKS, len(messages)
+        assert all(len(m) <= MESSAGE_LIMIT for m in messages)
+        assert "".join(messages).count(ATTRIBUTION) == 1 and messages[-1].endswith(ATTRIBUTION)
+    assert before_own_message == {1, 2, 3}  # the overflow path ran after every answer length that allows it
 
 
 def test_no_whitespace_only_chunks():
@@ -232,7 +266,7 @@ async def test_a_failed_delivery_drops_its_prompt(service, conn, held, fake_disc
 async def test_delivered_single_message(service, conn, held, fake_discord):
     iid, token = posted(conn, held)
     assert await service.deliver_reply(token, "Here you go <@1> @everyone", ME) == "delivered"
-    assert fake_discord.calls == [("itok", "> the question\nHere you go <@1> @everyone")]
+    assert fake_discord.calls == [("itok", "> the question\nHere you go <@1> @everyone\n\nWritten with Grok")]
     r = row(conn, iid)
     assert (r["status"], r["interaction_token"], r["chunks_sent"]) == ("answered", None, 1)
     assert_token_invariant(conn)
@@ -242,7 +276,7 @@ async def test_an_answer_after_a_restart_is_posted_without_the_quote(service, co
     """The run fetched before the restart; the prompt is gone, the answer isn't."""
     iid, token = posted(conn)
     assert await service.deliver_reply(token, "The answer.", ME) == "delivered"
-    assert fake_discord.calls == [("itok", "The answer.")]
+    assert fake_discord.calls == [("itok", "The answer.\n\nWritten with Grok")]
 
 
 async def test_deliver_reply_does_not_need_an_earlier_fetch(service, conn, held, fake_discord):
@@ -257,6 +291,16 @@ async def test_multi_chunk_private_uses_ephemeral_followups(service, conn, held,
     assert len(fake_discord.calls) == 1 and len(fake_discord.followups) >= 2
     assert all(ephemeral for _, _, ephemeral in fake_discord.followups)
     assert row(conn, iid)["chunks_sent"] == 1 + len(fake_discord.followups)
+    sent = [fake_discord.calls[0][1]] + [content for _, content, _ in fake_discord.followups]
+    assert "".join(sent).count(ATTRIBUTION) == 1 and sent[-1].endswith("\n\n" + ATTRIBUTION)
+
+
+async def test_an_attribution_that_does_not_fit_is_its_own_followup(service, conn, fake_discord):
+    iid, token = posted(conn)  # no prompt held: no quote, so the two messages are exactly 2000 and 1990
+    assert await service.deliver_reply(token, "w" * 3990, ME) == "delivered"
+    assert [len(content) for _, content in fake_discord.calls] == [2000]
+    assert [content for _, content, _ in fake_discord.followups] == ["w" * 1990, ATTRIBUTION]
+    assert row(conn, iid)["chunks_sent"] == 3
 
 
 async def test_token_is_single_use(service, conn, held):

@@ -4,7 +4,7 @@
 | --- | --- |
 | Authors | Adam Butac, Claude (Anthropic) |
 | Date | 2026-09-27 |
-| Status | Implemented through #96 (Grok Bot webhooks as a second automation kind) |
+| Status | Implemented through #2 (every answer says "Written with Grok") |
 | Service | `outer-steppes` |
 | Audience | Maintainers and reviewers of the bridge. To set up or run it, start with [README.md](README.md) |
 
@@ -404,6 +404,8 @@ Every path that ends an `/ask` without an answer calls `finalize(from → to, me
 ### Rendering and chunking
 
 The message is `> ` + the quote, a newline, then the answer. The quote is the held prompt with whitespace runs collapsed, cut to 200 characters (plus `…` when cut), so it's one line and can't escape the quote. An answer from a run that fetched before a restart finds no prompt held and posts without the quote. Words longer than 200 characters are split every 200; then pieces are packed greedily on whitespace into messages of at most 2000 characters, so every message but the last is over 1800. `REPLY_MAX_CHARS` (7000) plus the header therefore fits in at most **5 messages**.
+
+Every answer ends with a blank line and `Written with Grok`: on its last message, or as a message of its own when it doesn't fit there, which happens only to answers of at most three messages, so an answer still fits in 5. xAI's consumer terms require crediting Grok wherever its output is published, in one of the phrases its [Brand Guidelines](https://x.ai/legal/brand-guidelines) give, and its [Acceptable Use Policy](https://x.ai/legal/acceptable-use-policy) rules out services that appear to come from the operator when they come from xAI (both read 2026-10-09). Only Grok's answers carry it, not the bridge's own messages. An answer Discord stops partway through (T15) stays up without it, since the bridge never posts to an answer again.
 
 ### `deliver_reply(reply_token, content, mcp_registration_id)`
 

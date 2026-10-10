@@ -239,7 +239,7 @@ async def test_a_fresh_connect_and_an_answer_replay_as_recorded(boot):
     # earlier fetch (DESIGN.md, deliver_reply), so the recorded calls still replay.
     await client.session(rec[15:18], tokens["access_token"], tools_call(reply_token))
     [(kind, _, body)] = h.discord.calls
-    assert kind == "edit" and body["content"].endswith("four")
+    assert kind == "edit" and body["content"].endswith("four\n\nWritten with Grok")
 
 
 async def test_an_unprompted_refresh_after_expiry_and_a_one_session_answer_replay_as_recorded(boot):
@@ -265,4 +265,4 @@ async def test_an_unprompted_refresh_after_expiry_and_a_one_session_answer_repla
     reply_token = await ask(h, rec[19], 1)
     await client.session(rec[20:23], refreshed.json()["access_token"], tools_call(reply_token))
     [(kind, _, body)] = h.discord.calls
-    assert kind == "edit" and body["content"].endswith("four")
+    assert kind == "edit" and body["content"].endswith("four\n\nWritten with Grok")

@@ -28,7 +28,7 @@ async def test_a_member_who_never_connected_is_refused_until_they_connect(boot):
     status, ack = await h.interact(command())
     assert ack["type"] == 5
     await eventually(lambda: h.automation.replies, "the automation's discord_reply to return")
-    assert h.discord.calls[0][2]["content"] == "> hello\nHello."
+    assert h.discord.calls[0][2]["content"] == "> hello\nHello.\n\nWritten with Grok"
 
 
 async def test_disconnecting_a_member_from_the_operator_side_makes_ask_refuse(boot):
