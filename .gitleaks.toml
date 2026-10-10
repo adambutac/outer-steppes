@@ -1,0 +1,45 @@
+# Secret scanning for outer-steppes. Used by the gitleaks pre-commit hook
+# (.pre-commit-config.yaml) and by `gitleaks git` for history scans.
+# gitleaks' default rules stay on; the rules below cover the secrets this
+# project handles (DESIGN.md, "Config" never-log list).
+
+title = "outer-steppes"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "standard-webhooks-secret"
+description = "grok.com automation signing secret (Standard Webhooks whsec_)"
+regex = '''whsec_[A-Za-z0-9+/]{16,}={0,2}'''
+keywords = ["whsec_"]
+
+[[rules]]
+id = "discord-bot-token"
+description = "Discord bot token (base64 user id . timestamp . hmac)"
+regex = '''\b[A-Za-z0-9_-]{24,28}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27,40}\b'''
+entropy = 3.5
+
+[[rules]]
+id = "discord-interaction-token"
+description = "Discord interaction token (base64 of 'interaction:...')"
+regex = '''aW50ZXJhY3Rpb246[A-Za-z0-9_-]{20,}'''
+keywords = ["aW50ZXJhY3Rpb246"]
+
+[[rules]]
+id = "outer-steppes-reply-or-mcp-token"
+description = "outer-steppes reply token (rt_) or MCP token (mcp_)"
+regex = '''\b(?:rt|mcp)_[A-Za-z0-9_-]{43}\b'''
+keywords = ["rt_", "mcp_"]
+
+[[rules]]
+id = "ngrok-authtoken"
+description = "ngrok authtoken"
+regex = '''(?i)authtoken["'\s:=]+([0-9a-zA-Z]{20,}_[0-9a-zA-Z]{20,})'''
+secretGroup = 1
+keywords = ["authtoken"]
+
+[[allowlists]]
+description = "Published Standard Webhooks test vector in DESIGN.md and tests; not a live secret"
+regexTarget = "match"
+regexes = ['''whsec_MDEyMzQ1Njc4OWFiY2RlZg==''']

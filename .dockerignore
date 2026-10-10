@@ -1,0 +1,15 @@
+.git
+.venv
+.obsidian
+data
+docs
+tests
+**/__pycache__
+*.egg-info
+.pytest_cache
+*.db
+*.db-wal
+*.db-shm
+scripts/osctl_command.py
+**/.env
+**/*.env

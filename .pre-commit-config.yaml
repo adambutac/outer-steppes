@@ -1,0 +1,21 @@
+# Install once per clone:  .venv/Scripts/pre-commit install   (Windows)
+#                          .venv/bin/pre-commit install       (Linux/macOS)
+# pre-commit downloads a Go toolchain and builds gitleaks on first run.
+#
+# Hook repos are pinned by full commit SHA, with the tag in a trailing comment,
+# for the reason in ci.yml's header: a tag can be moved to other code, a SHA
+# can't. These hooks run on the dev machine. Bump with
+# `pre-commit autoupdate --freeze` and check each new SHA is the tagged commit
+# in the hook's own repository. Keep gitleaks at CI's GITLEAKS_VERSION.
+repos:
+  # Refuse commits made directly on main: every change goes through a PR branch
+  # and CI. (GitHub doesn't enforce branch rules on free private repos.)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b  # frozen: v5.0.0
+    hooks:
+      - id: no-commit-to-branch
+        args: [--branch, main]
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: 83d9cd684c87d95d656c1458ef04895a7f1cbd8e  # frozen: v8.30.1
+    hooks:
+      - id: gitleaks

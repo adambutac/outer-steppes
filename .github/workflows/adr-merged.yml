@@ -1,0 +1,51 @@
+# Stamps each ADR's Merged row with the date it reached main
+# (docs/adr/README.md, Statuses; scripts/stamp_adr_merged.py has how the date
+# is found). The only workflow that writes to main, by the owner's decision
+# (MALU-269): the merge date isn't known until the merge, so no branch can
+# carry it, and only this one job gets contents: write.
+#
+# It runs on pushes to main only, so it runs only code already on main, and
+# reads nothing from a PR or the event. It commits only under docs/adr. A push
+# made with GITHUB_TOKEN starts no workflow, so its own commit doesn't run it
+# again, and CI doesn't run on that commit either. If main moved on before the
+# push, the push fails and the run for the newer push stamps the same dates.
+#
+# It needs main to accept a direct push from GITHUB_TOKEN. Branch protection or
+# a ruleset that requires a PR for main (say, at the public cutover) must let
+# GitHub Actions bypass it, or every run fails and new ADRs stay pending.
+name: ADR merge date
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# One at a time, never cancelled: a later run starts from a newer main.
+concurrency:
+  group: adr-merged
+  cancel-in-progress: false
+
+jobs:
+  stamp:
+    name: stamp ADR merge dates
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # the stamp commit, pushed to main
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0   # the script reads each ADR's history
+      - name: Stamp
+        run: python3 scripts/stamp_adr_merged.py
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- docs/adr; then
+            echo "Nothing to stamp."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "Docs: stamp ADR merge dates" -- docs/adr
+          git push origin HEAD:main

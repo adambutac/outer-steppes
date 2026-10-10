@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "outer-steppes"
+version = "0.1.0"
+description = "Discord bridge to each member's own grok.com automation"
+readme = "README.md"
+license = "AGPL-3.0-only"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+dependencies = [
+    "aiohttp>=3.10",
+    "pynacl>=1.5",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8",
+    "pytest-aiohttp>=1.0",
+    "coverage>=7.6",
+]
+# Then run `pre-commit install` once per clone (see .pre-commit-config.yaml).
+dev = [
+    "pre-commit>=4",
+]
+
+[project.scripts]
+outer-steppes = "outer_steppes.main:main"
+# The operator and developer CLI, from a checkout installed with `pip install -e .` (DESIGN.md, Registration (operator)).
+osctl = "outer_steppes.osctl_launcher:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = ["integration: boots the real service on a temporary database (DESIGN.md, Testing); deselect with -m \"not integration\""]
+
+# CI measures the suite with these settings (DESIGN.md → Testing, "Coverage").
+# Code that tests run in a child process (startup refusals through
+# `python -m outer_steppes.main`, a few osctl probes) isn't measured.
+[tool.coverage.run]
+branch = true
+source = ["src/outer_steppes", "scripts"]
+
+[tool.coverage.report]
+precision = 1
+skip_empty = true

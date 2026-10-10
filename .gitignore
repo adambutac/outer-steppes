@@ -1,0 +1,13 @@
+.obsidian/
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.coverage
+.coverage.*
+data/
+*.db
+*.db-wal
+*.db-shm
+.env
+*.env

@@ -1,0 +1,18 @@
+# Keeps the SHA-pinned actions in .github/workflows/ current. Dependabot
+# updates the SHA and the trailing tag comment together. One grouped PR a week
+# at most, so a bump arrives as a single reviewable change.
+#
+# Dependabot's PRs have no Linear issue, filled template or pr-reviewer run, so
+# the CLAUDE.md PR rules can't apply to them as written. The owner reviews one
+# by checking that each new SHA is the tagged commit in the action's own
+# repository (a fork's commit also resolves under the upstream name), reading
+# the release notes, and waiting for green CI.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
