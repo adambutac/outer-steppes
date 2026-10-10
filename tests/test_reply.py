@@ -75,8 +75,8 @@ def test_the_attribution_gets_its_own_message_only_when_it_does_not_fit():
 
 
 def test_worst_case_with_the_attribution_fits_in_five_messages():
-    """The attribution can only need its own message when the last one is over 1981 characters, which leaves room
-    for at most four before it: a fifth that long would need more than REPLY_MAX_CHARS plus the header."""
+    """The attribution needs its own message only when it doesn't fit on the last one, which happens only to answers
+    of at most three messages, so an answer still fits in five."""
     header = render("q" * 250, "")
     contents = ["x" * 7000, ("y" * 199 + " ") * 35, "\n\n".join(["z" * 150] * 46)[:7000]]
     # Answers whose last message is too full for the attribution, at every message count that allows it (1-3;
