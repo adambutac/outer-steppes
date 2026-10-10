@@ -29,7 +29,7 @@ MESSAGE_LIMIT = 2000
 HARD_SPLIT = 200
 MAX_CHUNKS = 5
 QUOTE_CHARS = 200
-# SpaceXAI's terms require crediting Grok wherever its output is published, in the Brand Guidelines' words
+# xAI's terms require crediting Grok wherever its output is published, in the Brand Guidelines' words
 # (DESIGN.md, Rendering and chunking).
 ATTRIBUTION = "Written with Grok"
 
