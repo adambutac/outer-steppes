@@ -54,7 +54,7 @@ Prompt by reference, with prompts held only in memory and no excerpt stored (own
 - Each run needs two tool calls. If models skip `get_prompt`, runs answer nothing useful (Revisit if).
 - Setup mistakes show as timeouts, not at save time.
 - Whether the member holds a live connection can decide `/ask` for every member, so the bridge no longer records which path a member's answers take.
-- Connecting grok.com and setting an automation are still stored and changed separately, in either order; `/ask` works only once both are done. ADR-0012 decided the storage, not the reply path, so it isn't superseded.
+- Connecting grok.com and setting an automation are still stored and changed separately, in either order; `/ask` works only once both are done. [ADR-0012](0012-members-and-automations-are-separate.md) decided the storage, not the reply path, so it isn't superseded.
 - One grok.com account serves one member. grok.com refuses a second connector with the same name in one account, and a connector under another name has other tool names, which the instructions don't call (observed while building, 2026-10-08). A run that reaches another member's connector gets `unknown`, and the request times out; nothing is read or posted from the wrong place.
 - There is no HTTP reply path, and the payload carries no prompt, Discord ids or `reply_url`. DESIGN.md gains `get_prompt` (its rules, the MCP tool, a new state-machine ending and a new trigger for an existing one and a metric), new automation instructions, a smaller payload and test vector, and loses `/reply` and the per-member record of the reply path; README.md, SECURITY.md and the full diagram change with the code.
 

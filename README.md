@@ -11,10 +11,10 @@ The bridge was designed with security and privacy in mind. It never stores or lo
 - **The prompt never travels in the webhook.** The bridge can't prove that a webhook URL belongs to the member who saved it, so the POST carries only a single-use reply token. The prompt and the answer move only through the member's own OAuth-bound connector, which is what proves whose Grok is running.
 - **No AI keys, and no bot token in the server.** The bridge never generates text or holds an API key. The Discord bot token is used only from a separate shell to register commands, and the server refuses to start if it's in its environment.
 - **Secrets are stored by how they're used.** Webhook secrets the bridge must sign with are kept; tokens it only checks are stored as hashes.
-- **Personal by default.** A new bridge accepts nobody until its owner claims it with a one-time link, and then membership is locked.
+- **Personal by default.** A new bridge accepts nobody until its owner [claims it with a one-time link](docs/adr/0016-personal-by-default-claimed-through-a-link.md), and then membership is locked.
 - **No open ports.** TLS ends on the owner's machine through Tailscale Funnel; the admin API listens on loopback only.
 
-Each decision, and the alternatives it rejected, is recorded in [`docs/adr/`](docs/adr/). The threat model is in [DESIGN.md](DESIGN.md#threat-model).
+Each decision, and the alternatives it rejected, is recorded in [`docs/adr/`](docs/adr/README.md). The threat model is in [DESIGN.md](DESIGN.md#threat-model).
 
 ## Features
 
@@ -134,13 +134,13 @@ The integration tests (`tests/integration/`) boot the real service with only Dis
 ## Documentation
 
 - **[DESIGN.md](DESIGN.md):** what the system does: trust boundaries, the request path, OAuth, the threat model.
-- **[docs/adr/](docs/adr/):** why: one record per architecture decision.
+- **[docs/adr/](docs/adr/README.md):** why: one record per architecture decision.
 - **[SECURITY.md](SECURITY.md):** reporting a vulnerability.
 - **[docs/outer-steppes.excalidraw](docs/outer-steppes.excalidraw):** an end-to-end diagram; open it at excalidraw.com.
 
 ## How this was built
 
-I built Outer Steppes with AI coding agents (mainly Claude Code) doing most of the implementation. My part was the system itself: the requirements, the trust model, and every architecture decision, including the ones recorded after a review or a pilot proved an earlier design wrong. ADR-0017, which moved the prompt out of the webhook, is one of those.
+I built Outer Steppes with AI coding agents (mainly Claude Code) doing most of the implementation. My part was the system itself: the requirements, the trust model, and every architecture decision, including the ones recorded after a review or a pilot proved an earlier design wrong. [ADR-0017](docs/adr/0017-prompts-and-answers-through-the-connector.md), which moved the prompt out of the webhook, is one of those.
 
 The process is built so that no change gets in without evidence:
 
@@ -161,7 +161,7 @@ Licensed under the [GNU Affero General Public License v3.0 only](LICENSE) (`AGPL
 
 ## Terms
 
-Each member uses **only their own** grok.com account, through xAI's own interfaces (automation webhooks and custom MCP connectors), and nobody pays for access through the bridge. Sharing one automation with others isn't supported: xAI's consumer terms say you **may not "make your account available to anyone else"**, and the acceptable-use policy prohibits "unauthorized automated" access and reselling.
+Each member uses **only their own** grok.com account, through xAI's own interfaces (automation webhooks and custom MCP connectors), and nobody pays for access through the bridge. [Sharing one automation with others isn't supported](docs/adr/0009-no-role-grants.md): xAI's consumer terms say you **may not "make your account available to anyone else"**, and the acceptable-use policy prohibits "unauthorized automated" access and reselling.
 
 Re-read the sources yourself; this isn't legal advice: [xAI Terms of Service – Consumer](https://x.ai/legal/terms-of-service), [Acceptable Use Policy](https://x.ai/legal/acceptable-use-policy), [Consumer FAQs](https://x.ai/legal/faq), [Privacy Policy](https://x.ai/legal/privacy-policy), [Discord Developer Policy](https://support-dev.discord.com/hc/en-us/articles/8563934450327-Discord-Developer-Policy).
 

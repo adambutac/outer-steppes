@@ -1,6 +1,6 @@
 # Working on Outer Steppes
 
-DESIGN.md says what the system does; `docs/adr/` says why, for product-architecture decisions only (its README has the test). Change DESIGN.md before the behavior, and keep the two in step. A PR that makes or reverses such a decision adds its ADR or supersedes the old one; any other reason goes next to its rule. Merged ADRs aren't rewritten.
+[DESIGN.md](DESIGN.md) says what the system does; `docs/adr/` says why, for product-architecture decisions only (its README has the test). Change DESIGN.md before the behavior, and keep the two in step. A PR that makes or reverses such a decision adds its ADR or supersedes the old one; any other reason goes next to its rule. Merged ADRs aren't rewritten.
 
 **No users yet.** There's no release and no users, so a change simply changes the behavior: no upgrade paths, migrations, compatibility shims, deprecation notes or handling for existing bridges. Answer a review finding that asks for one with this rule. Deploy steps, such as order or a snapshot before a schema change, aren't upgrade paths and stay. This holds until the owner announces a release or the public cutover (MALU-160).
 
@@ -36,7 +36,7 @@ Plans and progress live in the Linear project **Outer Steppes** (team Malu), one
 ## Safety
 
 - **Never `git add -A` or `git add .`**: the repo root holds a real `.env`. Stage files by name.
-- The server never holds the bot token. Only `scripts/osctl_command.py` uses it, from a separate shell, never in the container (ADR-0008).
+- The server never holds the bot token. Only `scripts/osctl_command.py` uses it, from a separate shell, never in the container ([ADR-0008](docs/adr/0008-server-never-holds-the-bot-token.md)).
 - Never log, print or commit tokens, secrets, `whsec_` values, automation URLs, claim links or prompt text. Tests use made-up ids and URLs.
 
 ## Commands
