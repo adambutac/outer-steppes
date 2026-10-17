@@ -67,7 +67,7 @@ Rules about ADRs themselves, like these, live in this README and the template, n
 ## Rules that apply here too
 
 - No tokens, secrets, `whsec_` values, automation URLs, prompt text or real ids, as anywhere else in the repository.
-- An ADR never describes an open security finding. DESIGN.md → Security → Vulnerability handling says where one is recorded, both while the repository is private and once it's public.
+- An ADR never describes an open security finding. DESIGN.md → Security → Vulnerability handling says where one is recorded instead.
 
 ## Starting one
 
