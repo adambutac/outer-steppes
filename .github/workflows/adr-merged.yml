@@ -10,9 +10,11 @@
 # again, and CI doesn't run on that commit either. If main moved on before the
 # push, the push fails and the run for the newer push stamps the same dates.
 #
-# It needs main to accept a direct push from GITHUB_TOKEN. Branch protection or
-# a ruleset that requires a PR for main (say, at the public cutover) must let
-# GitHub Actions bypass it, or every run fails and new ADRs stay pending.
+# It needs main to accept a direct push from GITHUB_TOKEN. A ruleset that
+# requires a PR for main (MALU-168) would refuse it, and GitHub won't let the
+# Actions app bypass a ruleset on a personal-account repo, so that change also
+# needs a deploy key here or a stamp PR instead; otherwise every run fails and
+# new ADRs stay pending.
 name: ADR merge date
 
 on:

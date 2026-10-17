@@ -9,8 +9,7 @@
 # in the hook's own repository. Keep gitleaks at CI's GITLEAKS_VERSION.
 repos:
   # Refuse commits made directly on main: every change goes through a PR branch
-  # and CI. (GitHub's main ruleset blocks force-pushes and deletion, but doesn't
-  # yet require a PR or CI, so this hook is the guard against direct commits.)
+  # and CI. (GitHub doesn't yet require a PR for main: CLAUDE.md, Pull requests.)
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b  # frozen: v5.0.0
     hooks:
