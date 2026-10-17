@@ -35,6 +35,6 @@ Then list findings, most severe first. Each one gives:
 - **What:** the problem, in one or two sentences
 - **Why it matters:** a concrete failure scenario, if any
 - **Confidence:** `high`, `medium`, or `low`. Mark anything you couldn't verify.
-- **Pre-existing on main:** say so when a security weakness in any top-risk area is already in code on `main` rather than introduced by this branch. Once the repo is public, such a finding is handled privately, not in the PR. While it's private, the private-repo rule applies, and the finding is recorded in the PR as usual (DESIGN.md → Security → Vulnerability handling).
+- **Pre-existing on main:** say so when a security weakness in any top-risk area is already in code on `main` rather than introduced by this branch. The repo is public, so such a finding is handled privately, not in the PR (DESIGN.md → Security → Vulnerability handling).
 
 End with **"Not reviewed"**: anything you skipped or couldn't assess. Don't pad the report. If there's nothing to find in a category, say so in one line.

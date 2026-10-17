@@ -51,8 +51,8 @@ Linear: <!-- issue id, e.g. MALU-19 -->
 <!-- From the pr-reviewer agent (no session context), run before the push.
      Verdict, then each finding and what was done: fixed (how), clarified in
      DESIGN.md/code (where), answered (why), or "Answered, disagree:" (why not,
-     per CLAUDE.md). Once the repo is public, a
-     security weakness in code already on main is left out of this table
+     per CLAUDE.md). The repo is public, so a security weakness in code
+     already on main is left out of this table
      entirely, and the verdict is recorded as it stands without it
      (DESIGN.md → Security → Vulnerability handling).
      The verdict stays visible; the findings table goes in the collapsed block,

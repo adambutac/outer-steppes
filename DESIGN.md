@@ -973,7 +973,7 @@ Startup also fails if `DISCORD_BOT_TOKEN` or `LOG_PROMPTS` is present, at any va
 
 ### Vulnerability handling
 
-Once the repository is public, anything in it, in a PR, an issue or a commit message is a disclosure. [SECURITY.md](SECURITY.md) is the reporter's side.
+The repository is public (since 2026-10-09, with private vulnerability reporting on), so anything in it, in a PR, an issue or a commit message is a disclosure. [SECURITY.md](SECURITY.md) is the reporter's side.
 
 **Open finding:** a security weakness in code on `main` that is meant to be fixed, anywhere in the top risk tier the `pr-reviewer` agent checks: [trust boundaries](#identity-and-trust-boundaries), secret handling (storage, logging, hashing, comparison), outbound requests (URL policy, DNS pinning, redirects), and anything irreversible. Not open findings: the residual and accepted risks in the [threat model](#threat-model), which are public decisions, and a weakness only on an unmerged branch, which is fixed there and recorded in that PR's Independent review.
 
@@ -987,10 +987,6 @@ Once the repository is public, anything in it, in a PR, an issue or a commit mes
 2. GitHub runs no checks or CI in temporary private forks ([GitHub's docs](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/collaborating-in-a-temporary-private-fork-to-resolve-a-repository-security-vulnerability)). Before the merge, run the full suite locally, the `pr-reviewer` agent and the deliberate-break check, and confirm the pre-commit hook ran gitleaks 8.30.1 on each commit: a secret that reaches `main` can't be taken back. The Linux leg first runs in CI on `main` after the merge, so watch CI for the fix commit (if a newer push cancels that run, re-run it). If CI fails, fix forward the same way, through the advisory's fork while it's still a draft (a new fork if the first is gone). If that isn't possible, publish the advisory first, saying a follow-up fix is coming, and fix forward in the open; a PR on `origin` explaining a failure in an unpublished fix would advertise the hole.
 3. The owner merges from the advisory. That merge doesn't enforce branch protection rules, and like every merge it's the owner's action alone.
 4. Publish the advisory once CI on `main` is green for the fix commit, with the fix PR's Independent review and Deliberate-break sections copied in, so the review record stays public. There are no releases: the advisory is how operators learn to deploy the latest `main`. The fix's Linear issue moves to Done when the advisory is published.
-
-**While the repository is private,** private reporting and repository advisories don't exist ([GitHub's docs](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/about-repository-security-advisories)), so the detail goes in the PR's Independent review and the threat model, and Linear says only "open finding, see PR #N, Independent review". That's safe only because the repository isn't made public while any finding is open.
-
-**At the switch to public, in one sitting:** first confirm no finding is open (no unfixed weakness in a threat-model row, a PR's Independent review, or Linear); then, right after, turn on private vulnerability reporting, which is opt-in, so that SECURITY.md's **Report a vulnerability** button exists.
 
 ## Observability
 
