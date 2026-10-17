@@ -12,10 +12,10 @@
 #
 # It needs main to accept a direct push from GITHUB_TOKEN. A ruleset that
 # requires a PR for main (MALU-168) would refuse it, and GitHub won't let the
-# Actions app bypass a ruleset on a personal-account repo (it refused, "must be
-# part of the ruleset source or owner organization", 2026-10-09), so that change also
-# needs a deploy key here or a stamp PR instead; otherwise every run fails and
-# new ADRs stay pending.
+# Actions app bypass a ruleset on a personal-account repo (it refused: "must
+# be part of the ruleset source or owner organization", 2026-10-09). So that
+# change also needs a deploy key here or a stamp PR instead; otherwise every
+# run fails and new ADRs stay pending.
 name: ADR merge date
 
 on:
